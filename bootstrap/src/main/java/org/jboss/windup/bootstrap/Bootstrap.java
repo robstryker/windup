@@ -64,10 +64,14 @@ public class Bootstrap
 {
     public static final String WINDUP_HOME = "windup.home";
     private final AtomicBoolean batchMode = new AtomicBoolean(false);
-    private Furnace furnace;
+    /*private*/ Furnace furnace;
 
     public static void main(final String[] args)
     {
+    	mainImpl(args, true, new Bootstrap());
+    }
+    
+    protected static void mainImpl(final String[] args, boolean shutdown, Bootstrap bootstrap) {
         final List<String> bootstrapArgs = new ArrayList<>();
 
         for (String arg : args)
@@ -93,9 +97,10 @@ public class Bootstrap
             System.setProperty("java.util.logging.manager", logManagerName);
         }
 
-        Bootstrap bootstrap = new Bootstrap();
         bootstrap.run(bootstrapArgs);
-        bootstrap.stop();
+        
+        if( shutdown )
+        	bootstrap.stop();
     }
 
     private static boolean handleAsSystemProperty(String argument)
@@ -120,7 +125,7 @@ public class Bootstrap
         return true;
     }
 
-    private void run(List<String> args)
+    protected void run(List<String> args)
     {
         try
         {
@@ -181,7 +186,7 @@ public class Bootstrap
         }
     }
 
-    private void stop()
+    /*private*/ void stop()
     {
         if (furnace != null && !furnace.getStatus().isStopped())
             furnace.stop();
