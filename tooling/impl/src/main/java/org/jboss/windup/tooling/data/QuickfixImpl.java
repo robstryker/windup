@@ -40,9 +40,9 @@ public class QuickfixImpl implements Quickfix
     /**
      * @return the type
      */
-    public QuickfixType getType()
+    public String getType()
     {
-        return type;
+        return type.toString();
     }
 
     /**

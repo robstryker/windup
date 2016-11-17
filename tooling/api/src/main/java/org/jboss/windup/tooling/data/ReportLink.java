@@ -1,7 +1,5 @@
 package org.jboss.windup.tooling.data;
 
-import java.io.File;
-
 /**
  * Correlates files in the input application with the related source report file.
  *
@@ -12,10 +10,10 @@ public interface ReportLink
     /**
      * Contains the File path of the file in the input application.
      */
-    public File getInputFile();
+    public String getInputFile();
 
     /**
      * Contains the File path of the report.
      */
-    public File getReportFile();
+    public String getReportFile();
 }

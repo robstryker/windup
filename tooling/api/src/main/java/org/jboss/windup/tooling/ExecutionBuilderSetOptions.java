@@ -1,7 +1,5 @@
 package org.jboss.windup.tooling;
 
-import org.jboss.windup.config.ConfigurationOption;
-
 import java.nio.file.Path;
 import java.util.Collection;
 
@@ -58,13 +56,9 @@ public interface ExecutionBuilderSetOptions
     ExecutionBuilderSetOptions addUserRulesPaths(Iterable<Path> rulesPath);
 
     /**
-     * Sets the option with the specified name to the specified value. Option names can be found in static variables on {@link ConfigurationOption}
+     * Sets the option with the specified name to the specified value. 
+     * Option names can be found in static variables on {@link ConfigurationOption}
      * implementations.
      */
     ExecutionBuilderSetOptions setOption(String name, Object value);
-
-    /**
-     * Execute windup.
-     */
-    ExecutionResults execute();
 }

@@ -4,8 +4,8 @@ import java.io.File;
 import java.util.List;
 
 import org.jboss.windup.graph.GraphContext;
-import org.jboss.windup.reporting.model.ClassificationModel;
 import org.jboss.windup.reporting.category.IssueCategory;
+import org.jboss.windup.reporting.model.ClassificationModel;
 
 /**
  * This is a non-graph dependent analogue to {@link ClassificationModel} suitable for usage after the {@link GraphContext} itself has been closed.
@@ -20,9 +20,9 @@ public interface Classification
     Object getID();
 
     /**
-     * This is the {@link File} that this {@link Classification} refers to.
+     * This is the absolute path of the {@link File} that this {@link Classification} refers to.
      */
-    File getFile();
+    String getFile();
 
     /**
      * Contains a description of this {@link Classification}. This is similar in concept to a title, and should be one sentence or less.

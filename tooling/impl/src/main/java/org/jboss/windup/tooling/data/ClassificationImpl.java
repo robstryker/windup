@@ -50,9 +50,9 @@ public class ClassificationImpl implements Classification
      * This is the {@link File} that this {@link Classification} refers to.
      */
     @Override
-    public File getFile()
+    public String getFile()
     {
-        return file;
+        return file == null ? null : file.getAbsolutePath();
     }
 
     /**

@@ -3,8 +3,8 @@ package org.jboss.windup.tooling.data;
 import java.io.File;
 import java.util.List;
 
-import org.jboss.windup.reporting.model.InlineHintModel;
 import org.jboss.windup.reporting.category.IssueCategory;
+import org.jboss.windup.reporting.model.InlineHintModel;
 
 /**
  * This is equivalent to a {@link InlineHintModel}, however it contains no dependencies on having an open instance of the graph in order to operate.
@@ -19,9 +19,9 @@ public interface Hint
     Object getID();
 
     /**
-     * This references the {@link File} referenced by this {@link Hint}.
+     * This references the absolute path of the {@link File} referenced by this {@link Hint}.
      */
-    File getFile();
+    String getFile();
 
     /**
      * Contains a title for this hint. This should describe the problem itself (for example, "Usage of proprietary class: Foo")

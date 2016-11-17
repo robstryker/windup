@@ -21,9 +21,9 @@ public class ReportLinkImpl implements ReportLink
      */
     @Override
     @XmlElement(name = "input-file")
-    public File getInputFile()
+    public String getInputFile()
     {
-        return inputFile;
+        return inputFile == null ? null : inputFile.getAbsolutePath();
     }
 
     /**
@@ -39,9 +39,9 @@ public class ReportLinkImpl implements ReportLink
      */
     @Override
     @XmlElement(name = "report-file")
-    public File getReportFile()
+    public String getReportFile()
     {
-        return reportFile;
+        return reportFile == null ? null : reportFile.getAbsolutePath();
     }
 
     /**

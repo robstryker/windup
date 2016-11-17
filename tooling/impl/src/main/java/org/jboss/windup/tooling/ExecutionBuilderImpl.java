@@ -1,60 +1,31 @@
 package org.jboss.windup.tooling;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 
-import javax.inject.Inject;
-
-import org.jboss.forge.furnace.util.Lists;
 import org.jboss.windup.config.SkipReportsRenderingOption;
-import org.jboss.windup.exec.WindupProcessor;
-import org.jboss.windup.exec.WindupProgressMonitor;
-import org.jboss.windup.exec.configuration.WindupConfiguration;
-import org.jboss.windup.graph.GraphContext;
-import org.jboss.windup.graph.GraphContextFactory;
-import org.jboss.windup.graph.model.report.IgnoredFileRegexModel;
-import org.jboss.windup.graph.service.GraphService;
-import org.jboss.windup.rules.apps.java.config.ExcludePackagesOption;
-import org.jboss.windup.rules.apps.java.config.ScanPackagesOption;
 import org.jboss.windup.rules.apps.java.config.SourceModeOption;
-import org.jboss.windup.rules.apps.java.model.WindupJavaConfigurationModel;
-import org.jboss.windup.rules.apps.java.service.WindupJavaConfigurationService;
-import org.jboss.windup.util.PathUtil;
-import org.jboss.windup.util.exception.WindupException;
 
 /**
  * @author <a href="mailto:jesse.sightler@gmail.com">Jesse Sightler</a>
  */
-public class ExecutionBuilderImpl implements ExecutionBuilder, ExecutionBuilderSetInput, ExecutionBuilderSetOutput, ExecutionBuilderSetOptions,
-            ExecutionBuilderSetOptionsAndProgressMonitor
-{
-    @Inject
-    private GraphContextFactory graphContextFactory;
+public class ExecutionBuilderImpl implements ExecutionBuilder, ExecutionBuilderSetInput, 
+			ExecutionBuilderSetOutput, ExecutionBuilderSetOptions, ExecutionBuilderSetOptionsAndProgressMonitor {
 
-    @Inject
-    private ToolingXMLService toolingXMLService;
-
-    @Inject
-    private WindupProcessor processor;
-
-    private Path windupHome;
-    private WindupProgressMonitor progressMonitor;
-    private Path input;
-    private Path output;
-    private Set<String> ignorePathPatterns = new HashSet<>();
-    private Set<String> includePackagePrefixSet = new HashSet<>();
-    private Set<String> excludePackagePrefixSet = new HashSet<>();
-    private Set<String> userRulesPathSet = new HashSet<>();
-    private Map<String, Object> options = new HashMap<>();
-    private boolean skipReportsRendering;
+    Path windupHome;
+    ToolingProgressMonitor progressMonitor;
+    Path input;
+    Path output;
+    Set<String> ignorePathPatterns = new HashSet<>();
+    Set<String> includePackagePrefixSet = new HashSet<>();
+    Set<String> excludePackagePrefixSet = new HashSet<>();
+    Set<String> userRulesPathSet = new HashSet<>();
+    Map<String, Object> options = new HashMap<>();
+    boolean skipReportsRendering;
 
     /**
      * Is the option to skip Report preparing and generation set?
@@ -136,7 +107,7 @@ public class ExecutionBuilderImpl implements ExecutionBuilder, ExecutionBuilderS
     }
 
     @Override
-    public ExecutionBuilderSetOptions setProgressMonitor(WindupProgressMonitor monitor)
+    public ExecutionBuilderSetOptions setProgressMonitor(ToolingProgressMonitor monitor)
     {
         this.progressMonitor = monitor;
         return this;
@@ -186,102 +157,5 @@ public class ExecutionBuilderImpl implements ExecutionBuilder, ExecutionBuilderS
     {
         this.options.put(name, value);
         return this;
-    }
-
-    @Override
-    public ExecutionResults execute()
-    {
-        PathUtil.setWindupHome(this.windupHome);
-        WindupConfiguration windupConfiguration = new WindupConfiguration();
-        try
-        {
-            windupConfiguration.useDefaultDirectories();
-        }
-        catch (IOException e)
-        {
-            throw new WindupException("Failed to configure windup due to: " + e.getMessage(), e);
-        }
-        windupConfiguration.addInputPath(this.input);
-        windupConfiguration.setOutputDirectory(this.output);
-        windupConfiguration.setProgressMonitor(this.progressMonitor);
-        windupConfiguration.setOptionValue(SkipReportsRenderingOption.NAME, skipReportsRendering);
-
-        Path graphPath = output.resolve(GraphContextFactory.DEFAULT_GRAPH_SUBDIRECTORY);
-
-        Logger globalLogger = Logger.getLogger("");
-        WindupProgressLoggingHandler loggingHandler = null;
-        if (progressMonitor instanceof WindupToolingProgressMonitor) {
-            loggingHandler = new WindupProgressLoggingHandler((WindupToolingProgressMonitor)progressMonitor);
-            globalLogger.addHandler(loggingHandler);
-        }
-
-        try (final GraphContext graphContext = graphContextFactory.create(graphPath))
-        {
-
-            GraphService<IgnoredFileRegexModel> graphService = new GraphService<>(graphContext, IgnoredFileRegexModel.class);
-            for (String ignorePattern : this.ignorePathPatterns)
-            {
-                IgnoredFileRegexModel ignored = graphService.create();
-                ignored.setRegex(ignorePattern);
-
-                WindupJavaConfigurationModel javaCfg = WindupJavaConfigurationService.getJavaConfigurationModel(graphContext);
-                javaCfg.addIgnoredFileRegex(ignored);
-            }
-
-            windupConfiguration.setOptionValue(ScanPackagesOption.NAME, Lists.toList(this.includePackagePrefixSet));
-            windupConfiguration.setOptionValue(ExcludePackagesOption.NAME, Lists.toList(this.excludePackagePrefixSet));
-
-            for (Map.Entry<String, Object> option : options.entrySet())
-            {
-                windupConfiguration.setOptionValue(option.getKey(), option.getValue());
-            }
-            
-            windupConfiguration
-                        .setProgressMonitor(progressMonitor)
-                        .setGraphContext(graphContext);
-            
-            processor.execute(windupConfiguration);
-
-            return new ExecutionResultsImpl(graphContext, toolingXMLService);
-        }
-        catch (IOException e)
-        {
-            throw new WindupException("Failed to instantiate graph due to: " + e.getMessage(), e);
-        } finally
-        {
-            if (loggingHandler != null)
-                globalLogger.removeHandler(loggingHandler);
-        }
-    }
-
-    private class WindupProgressLoggingHandler extends Handler
-    {
-        private final WindupToolingProgressMonitor monitor;
-
-        public WindupProgressLoggingHandler(WindupToolingProgressMonitor monitor)
-        {
-            this.monitor = monitor;
-        }
-
-        @Override
-        public void publish(LogRecord record)
-        {
-            if (this.monitor == null)
-                return;
-
-            this.monitor.logMessage(record);
-        }
-
-        @Override
-        public void flush()
-        {
-
-        }
-
-        @Override
-        public void close() throws SecurityException
-        {
-
-        }
     }
 }

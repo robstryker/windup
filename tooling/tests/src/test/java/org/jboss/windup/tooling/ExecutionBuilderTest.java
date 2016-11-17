@@ -25,7 +25,6 @@ import org.jboss.windup.config.GraphRewrite;
 import org.jboss.windup.config.loader.RuleLoaderContext;
 import org.jboss.windup.config.metadata.MetadataBuilder;
 import org.jboss.windup.config.operation.GraphOperation;
-import org.jboss.windup.exec.WindupProgressMonitor;
 import org.jboss.windup.exec.configuration.options.OnlineModeOption;
 import org.jboss.windup.graph.model.WindupConfigurationModel;
 import org.jboss.windup.graph.service.WindupConfigurationService;
@@ -56,6 +55,9 @@ public class ExecutionBuilderTest
 
     @Inject
     private ExecutionBuilder builder;
+    @Inject
+    private ExecutionRunner runner;
+
     @Inject
     private GraphLoader graphLoader;
     @Inject
@@ -178,17 +180,17 @@ public class ExecutionBuilderTest
         Assert.assertEquals(Iterables.size(resultsOriginal.getReportLinks()), Iterables.size(resultsLater.getReportLinks()));
     }
 
-    private ExecutionResults executeWindup(Path input, Path output, WindupProgressMonitor progressMonitor)
+    private ExecutionResults executeWindup(Path input, Path output, ToolingProgressMonitor progressMonitor)
     {
-        return builder.begin(Paths.get("."))
+    	ExecutionBuilderSetOptions builder2 = builder.begin(Paths.get("."))
                     .setInput(input)
                     .setOutput(output)
                     .setProgressMonitor(progressMonitor)
                     .includePackage("org.windup.examples.ejb.messagedriven")
                     .ignore("\\.class$")
                     .setOption(SourceModeOption.NAME, true)
-                    .setOption(OnlineModeOption.NAME, false)
-                    .execute();
+                    .setOption(OnlineModeOption.NAME, false);
+    	return runner.execute(builder2);
     }
 
     private Path getDefaultPath()
@@ -243,7 +245,7 @@ public class ExecutionBuilderTest
         }
     }
 
-    private class TestProgressMonitor implements WindupProgressMonitor
+    private class TestProgressMonitor implements ToolingProgressMonitor
     {
         private int totalWork;
         private int completed;
@@ -290,6 +292,12 @@ public class ExecutionBuilderTest
         {
             this.completed = work;
         }
+
+		@Override
+		public void logMessage(LogRecord logRecord) {
+			// TODO Auto-generated method stub
+			
+		}
     }
 
     private class TestProgressWithLogging extends TestProgressMonitor implements WindupToolingProgressMonitor

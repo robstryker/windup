@@ -3,11 +3,11 @@ package org.jboss.windup.tooling.data;
 import java.io.File;
 import java.util.List;
 
-import org.jboss.windup.reporting.model.InlineHintModel;
-import org.jboss.windup.reporting.category.IssueCategory;
-
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
+
+import org.jboss.windup.reporting.category.IssueCategory;
+import org.jboss.windup.reporting.model.InlineHintModel;
 
 /**
  * This is equivalent to a {@link InlineHintModel}, however it contains no dependencies on having an open instance of the graph in order to operate.
@@ -53,9 +53,9 @@ public class HintImpl implements Hint
      * This references the {@link File} referenced by this {@link Hint}.
      */
     @Override
-    public File getFile()
+    public String getFile()
     {
-        return file;
+        return file == null ? null : file.getAbsolutePath();
     }
 
     /**

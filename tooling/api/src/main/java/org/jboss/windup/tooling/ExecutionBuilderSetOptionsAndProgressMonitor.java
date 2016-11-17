@@ -1,43 +1,20 @@
 package org.jboss.windup.tooling;
 
-import org.jboss.windup.config.ConfigurationOption;
 import org.jboss.windup.exec.WindupProgressMonitor;
 
 /**
- * Allows setting windup options, including the {@link WindupProgressMonitor}.
+ * Allows setting windup options and a progress monitor. 
+ * The progress monitor is an instance of {@link ToolingProgressMonitor}, 
+ * which is a clone of {@link WindupProgressMonitor} and will be wrapped
+ * in the implementation classes of the builder later to be passed
+ * to windup properly. 
  *
  * @author <a href="mailto:jesse.sightler@gmail.com">Jesse Sightler</a>
  */
-public interface ExecutionBuilderSetOptionsAndProgressMonitor
+public interface ExecutionBuilderSetOptionsAndProgressMonitor extends ExecutionBuilderSetOptions
 {
-    /**
-     * Sets a pattern of file paths to ignore during processing.
-     */
-    ExecutionBuilderSetOptions ignore(String ignorePattern);
-
-    /**
-     * Sets the package name prefixes to scan (the default is to scan all packages).
-     */
-    ExecutionBuilderSetOptions includePackage(String includePackagePrefix);
-
-    /**
-     * Sets the package name prefixes to ignore.
-     */
-    ExecutionBuilderSetOptions excludePackage(String excludePackagePrefix);
-
     /**
      * Sets the callback that will be used for monitoring progress.
      */
-    ExecutionBuilderSetOptions setProgressMonitor(WindupProgressMonitor monitor);
-
-    /**
-     * Sets the option with the specified name to the specified value. Option names can be found in static variables on {@link ConfigurationOption}
-     * implementations.
-     */
-    ExecutionBuilderSetOptions setOption(String name, Object value);
-
-    /**
-     * Execute windup.
-     */
-    ExecutionResults execute();
+    ExecutionBuilderSetOptions setProgressMonitor(ToolingProgressMonitor monitor);
 }
